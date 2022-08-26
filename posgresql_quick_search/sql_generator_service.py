@@ -9,17 +9,17 @@ class SQLGeneratorService:
         self.__table_schema = table_schema
         self.__table = table
 
-    def create(self) -> str:
-        return f'''
-{self.add_extension_schema()}
-{self.create_extension()}
-{self.drop_table()}
-{self.create_table()}
-{self.create_table_index()}
-{self.truncate_table()}
-{self.create_function()}
-{self.alter_function()}
-'''
+    def get_commands_in_order(self) -> list[str]:
+        return [
+            self.add_extension_schema(),
+            self.create_extension(),
+            self.drop_table(),
+            self.create_table(),
+            self.create_table_index(),
+            self.truncate_table(),
+            self.create_function(),
+            self.alter_function(),
+        ]
 
     def add_extension_schema(self) -> str:
         return f"""    

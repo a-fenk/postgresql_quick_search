@@ -11,7 +11,7 @@ setuptools.setup(
     description="...",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/skipp1/S954_Skipp3_0/postgresql_quick_search",
+    url="",
     packages=setuptools.find_packages(),
     install_requires=[],
     classifiers=[
