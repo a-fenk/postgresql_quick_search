@@ -1,1 +1,1 @@
-from sql_generator_service import SQLGeneratorService
+from .sql_generator_service import SQLGeneratorService

@@ -9,6 +9,18 @@ class SQLGeneratorService:
         self.__table_schema = table_schema
         self.__table = table
 
+    def create(self) -> str:
+        return f'''
+{self.add_extension_schema()}
+{self.create_extension()}
+{self.drop_table()}
+{self.create_table()}
+{self.create_table_index()}
+{self.truncate_table()}
+{self.create_function()}
+{self.alter_function()}
+'''
+
     def add_extension_schema(self) -> str:
         return f"""    
 -- Add schema for extension
@@ -25,13 +37,13 @@ CREATE EXTENSION IF NOT EXISTS intarray
 
     def drop_table(self) -> str:
         return f"""
-DROP TABLE IF EXISTS {self.__table_schemaa}.{self.__table};
+DROP TABLE IF EXISTS {self.__table_schema}.{self.__table};
 """
 
     def create_table(self) -> str:
         return f"""
 -- Create table of candidates, with parameters
-CREATE TABLE {self.__table_schemaa}.{self.__table}(
+CREATE TABLE {self.__table_schema}.{self.__table}(
     id integer,
     parameter_array integer[],		-- each element: (parameter_id << 16) + (parameter_value << 0)
     parameter_json jsonb,			-- "keyName": [<array of key values>], e.g. "stack": [1,5,20]
