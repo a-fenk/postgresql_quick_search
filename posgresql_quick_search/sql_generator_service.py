@@ -9,7 +9,7 @@ class SQLGeneratorService:
         self.__table_schema = table_schema
         self.__table = table
 
-    def get_commands_in_order(self) -> list[str]:
+    def get_sql_commands_in_order(self) -> list[str]:
         return [
             self.add_extension_schema(),
             self.create_intarray_extension(),
@@ -40,7 +40,6 @@ CREATE EXTENSION IF NOT EXISTS intarray
         return f"""
 -- Add uuid-ossp extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
-    SCHEMA {self.__extension_schema};
 """
 
     def drop_table(self) -> str:
