@@ -12,7 +12,8 @@ class SQLGeneratorService:
     def get_commands_in_order(self) -> list[str]:
         return [
             self.add_extension_schema(),
-            self.create_extension(),
+            self.create_intarray_extension(),
+            self.create_uuid_ossp_extension(),
             self.drop_table(),
             self.create_table(),
             self.create_table_index(),
@@ -27,13 +28,16 @@ class SQLGeneratorService:
 CREATE SCHEMA IF NOT EXISTS {self.__extension_schema}
 """
 
-    def create_extension(self) -> str:
+    def create_intarray_extension(self) -> str:
         return f"""
 -- Add intarray extension
 CREATE EXTENSION IF NOT EXISTS intarray
     SCHEMA {self.__extension_schema}
     VERSION "1.2";
-    
+"""
+
+    def create_uuid_ossp_extension(self) -> str:
+        return f"""
 -- Add uuid-ossp extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
     SCHEMA {self.__extension_schema};
