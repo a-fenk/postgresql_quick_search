@@ -33,6 +33,10 @@ CREATE SCHEMA IF NOT EXISTS {self.__extension_schema}
 CREATE EXTENSION IF NOT EXISTS intarray
     SCHEMA {self.__extension_schema}
     VERSION "1.2";
+    
+-- Add uuid-ossp extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+    SCHEMA {self.__extension_schema};
 """
 
     def drop_table(self) -> str:
@@ -44,7 +48,7 @@ DROP TABLE IF EXISTS {self.__table_schema}.{self.__table};
         return f"""
 -- Create table of candidates, with parameters
 CREATE TABLE {self.__table_schema}.{self.__table}(
-    id integer,
+    id uuid DEFAULT uuid_generate_v4 (),
     parameter_array integer[],		-- each element: (parameter_id << 16) + (parameter_value << 0)
     parameter_json jsonb,			-- "keyName": [<array of key values>], e.g. "stack": [1,5,20]
     CONSTRAINT {self.__table}_pkey PRIMARY KEY (id)
