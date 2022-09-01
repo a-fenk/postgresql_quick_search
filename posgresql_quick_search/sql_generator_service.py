@@ -90,6 +90,7 @@ AS $BODY$
 
 -- Select the best items based on input conditions
 --	=> {{ 
+--      \"ids\":  []  = array of prefiltered ids
 --      \"mandatory\": {{ \"<key>\": [numeric values] }}  = all mandatory parameters
 --      \"strict\":  [ {{ \"id\", \"value\", \"weight\" }} ]  = strict parameters, with weights (float value)
 --      \"bonus\":   [ {{ \"id\", \"value\", \"weight\" }} ]  = flexible parameters, with bonus equal to difference * weight (float value)
@@ -98,7 +99,7 @@ AS $BODY$
 --      \"onPage\": items per page
 --  }}
 
---	<= \"data\": [ {{ \"id\", \"rating\" }} ]
+--      <= "data": [ { "id", "rating" }, "total": int ]
 
 DECLARE
 	-- Exception diagnostics
@@ -120,6 +121,8 @@ DECLARE
     
     ljMandatory             jsonpath;           -- jsonpath for mandatory keys
     
+    ids                   	uuid[];             -- array of ids
+    
     laStrictValue           integer[];          -- array of strict parameters: (id << PARAM_ID_OFFSET) + value
     laStrictWeight          float[];            -- array of weights for strict parameters
 
@@ -129,10 +132,22 @@ DECLARE
     laPenaltyValue          integer[];          -- array of penalty parameters: (id << PARAM_ID_OFFSET) + value
     laPenaltyWeight         float[];            -- array of weights for penalty parameters
     
-	ljResult				jsonb;
+	ljResult                jsonb;
+	total					int;
+        
+begin
+	IF jsonb_typeof(ljInput->'ids') IS NOT DISTINCT FROM 'array' then
 	
-BEGIN
+        SELECT
+            array_agg(
+                value::uuid
+            )
+        INTO ids
+		FROM jsonb_array_elements_text(ljInput->'ids')
+		;
+    END IF;
 	
+        
     -- Calculate jsonpath for mandatory parameters
     ljMandatory := CASE
         WHEN jsonb_typeof(ljInput->'mandatory') IS DISTINCT FROM 'object' 
@@ -258,8 +273,15 @@ BEGIN
             parameter_array,
             (laStrictValue OPERATOR(ext.&) \"{self.__table}\".parameter_array) AS strict_intersect
         FROM {self.__table_schema}.{self.__table}
-        WHERE ljMandatory IS NULL
-            OR "{self.__table}".parameter_json @@ ljMandatory
+        WHERE ("executors_quick_search".id = any(ids) OR ids IS NULL) AND (
+	        ljMandatory IS NULL OR "executors_quick_search".parameter_json @@ ljMandatory
+	    )
+    ),
+    
+    "total" as materialized (
+   		SELECT
+           count("items_list".id)
+        FROM "items_list"
     ),
     
     -- Calculate rating for each item based on parameter_array
@@ -310,13 +332,17 @@ BEGIN
                 'id', "items_rating".id,
                 'rating', "items_rating".rating
             )
-        )
-    INTO ljResult
-    FROM "items_rating";
+        ),
+        "total".count
+    INTO ljResult, total
+    FROM "items_rating", "total"
+    group by "total".count;
+   	
     
     
-	RETURN jsonb_build_object(
-        'data', ljResult
+        RETURN jsonb_build_object(
+        'data', ljResult,
+        'total', total
         );
     
     
