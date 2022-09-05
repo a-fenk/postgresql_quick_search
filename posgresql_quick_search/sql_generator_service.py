@@ -19,7 +19,7 @@ class SQLGeneratorService:
             self.create_table_index(),
             self.truncate_table(),
             self.create_function(),
-            self.alter_function(),
+            # self.alter_function(),
         ]
 
     def add_extension_schema(self) -> str:
@@ -366,7 +366,8 @@ END;
 $BODY$;
 """
 
-    def alter_function(self):
-        return f"""
-ALTER FUNCTION {self.__table_schema}.{self.__table}(jsonb)
-"""
+#     def alter_function(self):
+#         return f"""
+# ALTER FUNCTION {self.__table_schema}.{self.__table}(jsonb)
+# OWNER TO postgres;
+# """
