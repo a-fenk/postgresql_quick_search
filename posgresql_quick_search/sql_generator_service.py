@@ -369,5 +369,4 @@ $BODY$;
     def alter_function(self):
         return f"""
 ALTER FUNCTION {self.__table_schema}.{self.__table}(jsonb)
-OWNER TO postgres;
 """
