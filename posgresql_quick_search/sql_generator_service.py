@@ -184,10 +184,6 @@ begin
         )::jsonpath
     END;
     
-    RETURN jsonb_build_object(
-        'data', ljMandatory
-        );
-    
     RAISE NOTICE 'ljMandatory: %', ljMandatory;
     
     -- Calculate array of strict parameters
