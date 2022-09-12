@@ -161,7 +161,7 @@ begin
                                     '(',
                                     (
                                         SELECT
-                                            string_agg(concat('$.', key, ' == ', param_value), ' || ')
+                                            string_agg(concat('$.', key, ' == ', param_value), ' && ')
                                         FROM jsonb_array_elements_text(value) param_value
                                         WHERE param_value ~ '^[0-9]{{1,6}}$'
                                             AND param_value::integer < PARAM_MAX_VALUE
@@ -183,8 +183,6 @@ begin
             FROM jsonb_each(ljInput->'mandatory')
         )::jsonpath
     END;
-    
-    RAISE NOTICE 'ljMandatory: %', ljMandatory;
     
     -- Calculate array of strict parameters
     IF jsonb_typeof(ljInput->'strict') IS NOT DISTINCT FROM 'array' THEN
