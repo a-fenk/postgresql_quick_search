@@ -184,7 +184,7 @@ begin
         )::jsonpath
     END;
     
-    
+    PRINT ljMandatory;
     
     -- Calculate array of strict parameters
     IF jsonb_typeof(ljInput->'strict') IS NOT DISTINCT FROM 'array' THEN
@@ -262,11 +262,6 @@ begin
     
     END IF;
     
-    
-    -- WHERE ("{self.__table}".id = any(ids) OR ids IS NULL) AND (
-	--         ljMandatory IS NULL OR "{self.__table}".parameter_json @@ ljMandatory
-    -- )
-
     -- Build response
     WITH 
     -- Select all items based on mandatory parameters, with \"strict\" array intersection
@@ -276,7 +271,9 @@ begin
             parameter_array,
             (laStrictValue OPERATOR(ext.&) \"{self.__table}\".parameter_array) AS strict_intersect
         FROM {self.__table_schema}.{self.__table}
-        WHERE ljMandatory IS NULL OR "executors_quick_search".parameter_json @@ ljMandatory
+        WHERE ("{self.__table}".id = any(ids) OR ids IS NULL) AND (
+	        ljMandatory IS NULL OR "{self.__table}".parameter_json @@ ljMandatory
+	    )
     ),
     
     "total" as materialized (
