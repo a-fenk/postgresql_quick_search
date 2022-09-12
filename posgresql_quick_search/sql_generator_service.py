@@ -184,7 +184,7 @@ begin
         )::jsonpath
     END;
     
-    PRINT ljMandatory;
+    RAISE NOTICE 'ljMandatory: %', ljMandatory;
     
     -- Calculate array of strict parameters
     IF jsonb_typeof(ljInput->'strict') IS NOT DISTINCT FROM 'array' THEN
