@@ -263,6 +263,9 @@ begin
     END IF;
     
     
+    -- WHERE ("{self.__table}".id = any(ids) OR ids IS NULL) AND (
+	--         ljMandatory IS NULL OR "{self.__table}".parameter_json @@ ljMandatory
+    -- )
 
     -- Build response
     WITH 
@@ -273,9 +276,7 @@ begin
             parameter_array,
             (laStrictValue OPERATOR(ext.&) \"{self.__table}\".parameter_array) AS strict_intersect
         FROM {self.__table_schema}.{self.__table}
-        WHERE ("executors_quick_search".id = any(ids) OR ids IS NULL) AND (
-	        ljMandatory IS NULL OR "executors_quick_search".parameter_json @@ ljMandatory
-	    )
+        WHERE ljMandatory IS NULL OR "executors_quick_search".parameter_json @@ ljMandatory
     ),
     
     "total" as materialized (
