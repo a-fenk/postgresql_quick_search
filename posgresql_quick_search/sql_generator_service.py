@@ -314,36 +314,6 @@ begin
             ), 0)
             AS rating
         FROM "items_list"
-        WHERE COALESCE(
-            (   -- Weighted strict vector
-                SELECT
-                    SUM(laStrictWeight[strict_elem.i]::integer)
-                FROM unnest("items_list".strict_intersect) WITH ORDINALITY strict_elem(id, i)
-            ), 0)
-            +
-            COALESCE(
-            (   -- Weighted bonus vector
-                SELECT
-                    SUM(
-                        laBonusWeight[bonus.i]::integer
-                        * GREATEST((element_id & PARAM_VALUE_BITMASK) - (bonus.id & PARAM_VALUE_BITMASK), 0)
-                    )
-                FROM unnest(laBonusValue) WITH ORDINALITY bonus(id, i)
-                INNER JOIN unnest("items_list".parameter_array) element_id ON
-                    element_id >> PARAM_ID_OFFSET = bonus.id >> PARAM_ID_OFFSET
-            ), 0)
-            -
-            COALESCE(
-            (   -- Weighted penalty vector
-                SELECT
-                    SUM(
-                        laPenaltyWeight[penalty.i]::integer
-                        * GREATEST((penalty.id & PARAM_VALUE_BITMASK) - (element_id & PARAM_VALUE_BITMASK), 0)
-                    )
-                FROM unnest(laPenaltyValue) WITH ORDINALITY penalty(id, i)
-                INNER JOIN unnest("items_list".parameter_array) element_id ON
-                    element_id >> PARAM_ID_OFFSET = penalty.id >> PARAM_ID_OFFSET
-            ), 0) >= lnMinRating
         ORDER BY rating DESC
         LIMIT lnLimit
         OFFSET lnOffset
@@ -354,6 +324,7 @@ begin
    		SELECT
            count("items_rating".id)
         FROM "items_rating"
+        WHERE "items_rating".rating >= lnMinRating
     )
     
     SELECT
@@ -366,7 +337,8 @@ begin
         "total".count
     INTO ljResult, total
     FROM "items_rating", "total"
-    group by "total".count;
+    WHERE "items_rating".rating >= lnMinRating
+    GROUP BY "total".count;
    	
     
     
