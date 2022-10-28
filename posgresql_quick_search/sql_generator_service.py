@@ -97,6 +97,8 @@ AS $BODY$
 --      \"penalty\": [ {{ \"id\", \"value\", \"weight\" }} ]  = flexible parameters, with penalty equal to difference * weight (float value)
 --      \"page\": page ID
 --      \"onPage\": items per page
+--      \"minRating\": minimal rating for items
+
 --  }}
 
 --      <= "data": [ { "id", "rating" }, "total": int ]
@@ -118,6 +120,7 @@ DECLARE
 	-- Input parameters
     lnLimit                 integer := COALESCE(ljInput->>'onPage', '64')::integer;
     lnOffset                integer := (COALESCE(ljInput->>'page', '1')::integer - 1) * lnLimit;
+    lnMinRating             integer := COALESCE(ljInput->>'minRating', '0')::integer;
     
     ljMandatory             jsonpath;           -- jsonpath for mandatory keys
     
@@ -274,12 +277,6 @@ begin
 	    )
     ),
     
-    "total" as materialized (
-   		SELECT
-           count("items_list".id)
-        FROM "items_list"
-    ),
-    
     -- Calculate rating for each item based on parameter_array
     "items_rating" AS MATERIALIZED (
         SELECT
@@ -317,9 +314,16 @@ begin
             ), 0)
             AS rating
         FROM "items_list"
+        WHERE rating >= lnMinRating
         ORDER BY rating DESC
         LIMIT lnLimit
         OFFSET lnOffset
+    )
+    
+    "total" as materialized (
+   		SELECT
+           count("items_rating".id)
+        FROM "items_rating"
     )
     
     SELECT
