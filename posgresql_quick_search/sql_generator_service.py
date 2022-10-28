@@ -315,8 +315,6 @@ begin
             AS rating
         FROM "items_list"
         ORDER BY rating DESC
-        LIMIT lnLimit
-        OFFSET lnOffset
     ),
     
     -- calculating total results counter
@@ -330,17 +328,17 @@ begin
     SELECT
         jsonb_agg(
             jsonb_build_object(
-                'id', "items_rating".id,
-                'rating', "items_rating".rating
+                'id', "items".id,
+                'rating', "items".rating
             )
         ),
         "total".count
     INTO ljResult, total
-    FROM "items_rating", "total"
-    WHERE "items_rating".rating >= lnMinRating
+    FROM 
+        (SELECT * from "items_rating" WHERE "items_rating".rating >= lnMinRating LIMIT lnLimit OFFSET lnOffset) as "items",
+        "total"
     GROUP BY "total".count;
-   	
-    
+
     
         RETURN jsonb_build_object(
         'data', ljResult,
