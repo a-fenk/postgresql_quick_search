@@ -320,6 +320,7 @@ begin
         OFFSET lnOffset
     ),
     
+    -- calculating total results counter
     "total" as materialized (
    		SELECT
            count("items_rating".id)
