@@ -318,7 +318,7 @@ begin
         ORDER BY rating DESC
         LIMIT lnLimit
         OFFSET lnOffset
-    )
+    ),
     
     "total" as materialized (
    		SELECT
